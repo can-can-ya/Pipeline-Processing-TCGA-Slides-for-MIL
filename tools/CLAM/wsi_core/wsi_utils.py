@@ -269,7 +269,7 @@ def StitchCoords(hdf5_file_path, wsi_object, downscale=16, draw_grid=False, bg_c
     print('ref patch size: {}x{}'.format(patch_size, patch_size))
 
     if w*h > Image.MAX_IMAGE_PIXELS: 
-        raise Image.DecompressionBombError("Visualization Downscale %d is too large" % downscale)
+        raise Image.DecompressionBombError("Visualization Downscale %d is too small" % downscale)
     
     if alpha < 0 or alpha == -1:
         heatmap = Image.new(size=(w,h), mode="RGB", color=bg_color)

@@ -193,7 +193,7 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
 		if patch:
 			current_patch_params.update({'patch_level': patch_level, 'patch_size': patch_size, 'step_size': step_size, 
 										 'save_path': patch_save_dir})
-			file_path, patch_time_elapsed = patching(WSI_object = WSI_object,  **current_patch_params,)
+			hdf5_file_path, patch_time_elapsed = patching(WSI_object = WSI_object,  **current_patch_params)
 		
 		stitch_time_elapsed = -1
 		if stitch:

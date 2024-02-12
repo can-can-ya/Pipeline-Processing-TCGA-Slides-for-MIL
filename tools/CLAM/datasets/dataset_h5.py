@@ -190,7 +190,7 @@ class Whole_Slide_Bag_FP(Dataset):
 		print('-- pretrained: ', self.pretrained)
 		print('-- patches sampler:', self.sampler_setting)
 		print('-- color normalization:', self.color_normalizer)
-		print('-- color argmentation:', self.color_augmenter)
+		print('-- color augmentation:', self.color_augmenter)
 		print('-- add_patch_noise:', self.add_patch_noise)
 		print('-- transformations: ', self.roi_transforms)
 

@@ -100,7 +100,7 @@ class WholeSlideImage(object):
             filtered = []
 
             # find indices of foreground contours (parent == -1)
-            hierarchy_1 = np.flatnonzero(hierarchy[:,1] == -1)
+            hierarchy_1 = np.flatnonzero(hierarchy[:,1] == -1) # The index of the nonzero element.
             all_holes = []
             
             # loop through foreground contour indices
@@ -141,7 +141,7 @@ class WholeSlideImage(object):
 
             return foreground_contours, hole_contours
         
-        img = np.array(self.wsi.read_region((0,0), seg_level, self.level_dim[seg_level]))
+        img = np.array(self.wsi.read_region((0,0), seg_level, self.level_dim[seg_level])) # RGBA
         img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)  # Convert to HSV space
         img_med = cv2.medianBlur(img_hsv[:,:,1], mthresh)  # Apply median blurring
         
@@ -166,7 +166,7 @@ class WholeSlideImage(object):
         filter_params['a_h'] = filter_params['a_h'] * scaled_ref_patch_area
         
         # Find and filter contours
-        contours, hierarchy = cv2.findContours(img_otsu, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE) # Find contours 
+        contours, hierarchy = cv2.findContours(img_otsu, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE) # Find contours, hierarchy: [Next, Previous, First_Child, Parent]
         hierarchy = np.squeeze(hierarchy, axis=(0,))[:, 2:]
         if filter_params: foreground_contours, hole_contours = _filter_contours(contours, hierarchy, filter_params)  # Necessary for filtering out artifacts
 
@@ -206,7 +206,7 @@ class WholeSlideImage(object):
             if self.contours_tissue is not None and seg_display:
                 if not number_contours:
                     cv2.drawContours(img, self.scaleContourDim(self.contours_tissue, scale), 
-                                     -1, color, line_thickness, lineType=cv2.LINE_8, offset=offset)
+                                     -1, color, line_thickness, lineType=cv2.LINE_8, offset=offset) # Draw all the contours on img.
 
                 else: # add numbering to each contour
                     for idx, cont in enumerate(self.contours_tissue):
@@ -221,7 +221,7 @@ class WholeSlideImage(object):
 
                 for holes in self.holes_tissue:
                     cv2.drawContours(img, self.scaleContourDim(holes, scale), 
-                                     -1, hole_color, line_thickness, lineType=cv2.LINE_8)
+                                     -1, hole_color, line_thickness, lineType=cv2.LINE_8) # Draw all the holes on img.
             
             if self.contours_tumor is not None and annot_display:
                 cv2.drawContours(img, self.scaleContourDim(self.contours_tumor, scale), 
@@ -343,9 +343,9 @@ class WholeSlideImage(object):
         return 0
 
     @staticmethod
-    def isInContours(cont_check_fn, pt, holes=None, patch_size=256):
+    def isInContours(cont_check_fn, pt, holes=[], patch_size=256):
         if cont_check_fn(pt):
-            if holes is not None:
+            if holes is not []:
                 return not WholeSlideImage.isInHoles(holes, pt, patch_size)
             else:
                 return 1
@@ -370,24 +370,23 @@ class WholeSlideImage(object):
         return level_downsamples
 
     def process_contours(self, save_path, patch_level=0, patch_size=256, step_size=256, **kwargs):
-        save_path_hdf5 = os.path.join(save_path, str(self.name) + '.h5')
+        self.hdf5_file = os.path.join(save_path, str(self.name) + '.h5')
         print("Creating patches for: ", self.name, "...",)
-        elapsed = time.time()
         n_contours = len(self.contours_tissue)
         print("Total number of contours to process: ", n_contours)
         fp_chunk_size = math.ceil(n_contours * 0.05)
         init = True
         for idx, cont in enumerate(self.contours_tissue):
-            if (idx + 1) % fp_chunk_size == fp_chunk_size:
+            if idx % fp_chunk_size == 0:
                 print('Processing contour {}/{}'.format(idx, n_contours))
             
             asset_dict, attr_dict = self.process_contour(cont, self.holes_tissue[idx], patch_level, save_path, patch_size, step_size, **kwargs)
             if len(asset_dict) > 0:
                 if init:
-                    save_hdf5(save_path_hdf5, asset_dict, attr_dict, mode='w')
+                    save_hdf5(self.hdf5_file, asset_dict, attr_dict, mode='w')
                     init = False
                 else:
-                    save_hdf5(save_path_hdf5, asset_dict, mode='a')
+                    save_hdf5(self.hdf5_file, asset_dict, mode='a')
 
         return self.hdf5_file
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e # Causes the Shell script to exit immediately when it encounters any error.
 
 # Sample patches of SIZE x SIZE at LEVEL 
 LEVEL=1
